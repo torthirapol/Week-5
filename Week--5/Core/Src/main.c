@@ -1,21 +1,21 @@
 /* USER CODE BEGIN Header */
 /**
- ******************************************************************************
- * @file           : main.c
- * @brief          : Main program body
- ******************************************************************************
- * @attention
- *
- * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
- * All rights reserved.</center></h2>
- *
- * This software component is licensed by ST under BSD 3-Clause license,
- * the "License"; You may not use this file except in compliance with the
- * License. You may obtain a copy of the License at:
- *                        opensource.org/licenses/BSD-3-Clause
- *
- ******************************************************************************
- */
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  * @attention
+  *
+  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
+  * All rights reserved.</center></h2>
+  *
+  * This software component is licensed by ST under BSD 3-Clause license,
+  * the "License"; You may not use this file except in compliance with the
+  * License. You may obtain a copy of the License at:
+  *                        opensource.org/licenses/BSD-3-Clause
+  *
+  ******************************************************************************
+  */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -32,8 +32,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define CAPTURENUM 16
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -50,19 +48,6 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 
-//12 P/R , Gear reduction 1 : 64
-//DMA Buffer
-uint16_t capturedata[CAPTURENUM] = { 0 };
-//diff time of capture data
-int32_t DiffTime[CAPTURENUM-1] = { 0 };
-//Mean difftime
-float MeanTime =0;
-
-
-
-
-//for microsecond measurement
-uint64_t _micros =0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -73,9 +58,7 @@ static void MX_USART2_UART_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM11_Init(void);
 /* USER CODE BEGIN PFP */
-//Read speed of encoder
-void encoderSpeedReaderCycle();
-uint64_t micros();
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -116,32 +99,17 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
-  	  //start Microsec timer
-	HAL_TIM_Base_Start_IT(&htim11);
-	//start Input capture in DMA
-	HAL_TIM_Base_Start(&htim1);
-	HAL_TIM_IC_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t*) &capturedata,
-			CAPTURENUM);
-	uint64_t timestamp =0;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	while (1) {
-		//read Time of encoder
-		encoderSpeedReaderCycle();
-
-		if(micros()-timestamp > 1000000)
-		{
-			timestamp = micros();
-			HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
-		}
-
-
+  while (1)
+  {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	}
+  }
   /* USER CODE END 3 */
 }
 
@@ -362,38 +330,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void encoderSpeedReaderCycle() {
-	//get DMA Position form number of data
-	uint32_t CapPos =CAPTURENUM -  __HAL_DMA_GET_COUNTER(htim1.hdma[TIM_DMA_ID_CC1]);
-	uint32_t sum = 0 ;
 
-	//calculate diff from all buffer
-	for(register int i=0 ;i < CAPTURENUM-1;i++)
-	{
-		DiffTime[i]  = capturedata[(CapPos+1+i)%CAPTURENUM]-capturedata[(CapPos+i)%CAPTURENUM];
-		//time never go back, but timer can over flow , conpensate that
-		if (DiffTime[i] <0)
-		{
-			DiffTime[i]+=65535;
-		}
-		//Sum all 15 Diff
-		sum += DiffTime[i];
-	}
-
-	//mean all 15 Diff
-	MeanTime =sum / (float)(CAPTURENUM-1);
-}
-uint64_t micros()
-{
-	return _micros + htim11.Instance->CNT;
-}
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
- if(htim == &htim11)
- {
-	 _micros += 65535;
- }
-}
 /* USER CODE END 4 */
 
 /**
@@ -403,10 +340,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-	/* User can add his own implementation to report the HAL error return state */
-	__disable_irq();
-	while (1) {
-	}
+  /* User can add his own implementation to report the HAL error return state */
+  __disable_irq();
+  while (1)
+  {
+  }
   /* USER CODE END Error_Handler_Debug */
 }
 
